@@ -36,16 +36,17 @@ const observer = new MutationObserver((mutations) => {
     if (document.querySelector("li.inserted-extension") == null) {
       ulLastPos = ul.getAttribute("style");
       let liText = "";
-      if (mutations.target == null) {
+      if (mutations[0].target == null) {
         return;
       }
-      let children = mutations.target.children;
+      let children = Array.from(mutations[0].target.children);
       children.forEach((child) => {
         if (child.tagName === "TEXTAREA") {
           let pos = child.selectionStart;
           let text = child.value;
           alias.forEach(a => {
-            if (a[2].startsWith(fetchStr(text, pos))) {
+            let start = fetchStr(text, pos);
+            if (start && a[2].startsWith(start)) {
               liText += `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
             }
           });
