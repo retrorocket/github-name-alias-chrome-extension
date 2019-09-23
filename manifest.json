@@ -1,0 +1,25 @@
+{
+  "content_scripts": [
+    {
+      "js": [
+        "js/script.js"
+      ],
+      "matches": [
+        "https://github.com/*"
+      ],
+      "all_frames": true,
+      "run_at": "document_end"
+    }
+  ],
+  "description": "GitHubで名前にエイリアスを設定するための拡張です",
+  "icons": {
+    "128": "icon_128.png"
+  },
+  "manifest_version": 2,
+  "name": "GitHubで名前にエイリアスを設定するやつ",
+  "options_page": "options.html",
+  "version": "0.1",
+  "permissions": [
+    "storage"
+  ]
+}
