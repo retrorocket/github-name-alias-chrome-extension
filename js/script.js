@@ -25,14 +25,19 @@ const replaceMentions = () => {
  */
 let ulShowing = true;
 let ulLastPos = "";
-let clone;
+let calledCreateSuggester = false;
 
 // オブザーバーの作成
 const observer = new MutationObserver((mutations) => {
-  const ul = document.querySelector("ul.suggester-container");
+  let ul = document.querySelector("ul.suggester-container");
+  let insertedUl = document.querySelector("ul.inserted-extension-ul");
+  if (insertedUl) {
+    calledCreateSuggester = true;
+    return;
+  }
+  calledCreateSuggester = false;
   if (ul) {
     ulShowing = true;
-    clone = ul.cloneNode(true);
     if (document.querySelector("li.inserted-extension") == null) {
       ulLastPos = ul.getAttribute("style");
       let liText = "";
@@ -84,8 +89,8 @@ const createSuggester = () => {
   textareas.forEach(textarea => {
     textarea.addEventListener("input",
       () => {
-        if (!ulShowing) {
-          removeSuggester();
+        removeSuggester();
+        if (!ulShowing || calledCreateSuggester) {
           let pos = textarea.selectionStart;
           let text = textarea.value;
           var end = textarea.selectionEnd;
@@ -103,7 +108,6 @@ const createSuggester = () => {
             let lis = document.querySelectorAll("li.inserted-extension");
             lis.forEach(li => {
               li.addEventListener("click", () => {
-                console.log(text);
                 let diff = caclPos(text, pos);
                 var before = text.substr(0, pos - diff);
                 var word = li.getAttribute("data-value");
