@@ -52,14 +52,12 @@ const observer = new MutationObserver((mutations) => {
           alias.forEach(a => {
             let start = fetchStr(text, pos);
             if (start && a[2].startsWith(start)) {
-              liText += `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
+              let liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
+              ul.insertBefore(createElementFromHTML(liText), ul.firstChild);
             }
           });
         }
       });
-      if (liText) {
-        ul.insertBefore(createElementFromHTML(liText), ul.firstChild);
-      }
     }
   } else {
     ulShowing = false; // suggesterが表示された後、候補がなくなったので表示されなくなった
