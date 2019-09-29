@@ -29,6 +29,10 @@ let calledCreateSuggester = false;
 
 // オブザーバーの作成
 const observer = new MutationObserver((mutations) => {
+  let uls = document.querySelectorAll("ul.suggester-container");
+  if (uls.length > 1) {
+    removeSuggester();
+  }
   let ul = document.querySelector("ul.suggester-container");
   let insertedUl = document.querySelector("ul.inserted-extension-ul");
   if (insertedUl) {
@@ -38,24 +42,20 @@ const observer = new MutationObserver((mutations) => {
   calledCreateSuggester = false;
   if (ul) {
     ulShowing = true;
-    if (document.querySelector("li.inserted-extension") == null) {
+    if (!document.querySelector("li.inserted-extension")) {
       ulLastPos = ul.getAttribute("style");
-      let liText = "";
-      if (mutations[0].target == null) {
+      if (!mutations[0].target) {
         return;
       }
-      let children = Array.from(mutations[0].target.children);
-      children.forEach((child) => {
-        if (child.tagName === "TEXTAREA") {
-          let pos = child.selectionStart;
-          let text = child.value;
-          alias.forEach(a => {
-            let start = fetchStr(text, pos);
-            if (start && a[2].startsWith(start)) {
-              let liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
-              ul.insertBefore(createElementFromHTML(liText), ul.firstChild);
-            }
-          });
+      let child = mutations[0].target.querySelector("textarea");
+      let pos = child.selectionStart;
+      let text = child.value;
+      alias.forEach(a => {
+        let start = fetchStr(text, pos);
+        console.log(start);
+        if (start && a[2].startsWith(start)) {
+          let liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
+          ul.insertBefore(createElementFromHTML(liText), ul.firstChild);
         }
       });
     }
@@ -85,13 +85,13 @@ document.body.addEventListener("click", () => {
  */
 const createSuggester = () => {
   textareas.forEach(textarea => {
-    textarea.addEventListener("input",
-      () => {
+    textarea.addEventListener("keyup",
+      (e) => {
         removeSuggester();
         if (!ulShowing || calledCreateSuggester) {
-          let pos = textarea.selectionStart;
-          let text = textarea.value;
-          var end = textarea.selectionEnd;
+          let pos = e.target.selectionStart;
+          let text = e.target.value;
+          var end = e.target.selectionEnd;
           const ulText = `<ul role="listbox" class="inserted-extension-ul suggester-container suggester suggestions list-style-none position-absolute" style="${ulLastPos}">`;
           let liText = "";
           alias.forEach(a => {
@@ -102,7 +102,7 @@ const createSuggester = () => {
           });
           if (liText) {
             // ul追加
-            textarea.parentNode.insertBefore(createElementFromHTML(ulText + liText + "</ul>"), textarea.nextSibling);
+            e.target.parentNode.insertBefore(createElementFromHTML(ulText + liText + "</ul>"), e.target.nextSibling);
             let lis = document.querySelectorAll("li.inserted-extension");
             lis.forEach(li => {
               li.addEventListener("click", () => {
@@ -111,8 +111,8 @@ const createSuggester = () => {
                 var word = li.getAttribute("data-value");
                 var after = text.substr(pos);
                 text = before + word + after;
-                textarea.value = text;
-                textarea.selectionEnd = end + word.length;
+                e.target.value = text;
+                e.target.selectionEnd = end + word.length;
                 removeSuggester();
               }, false);
             })
@@ -163,10 +163,60 @@ const fetchStr = (text, caretPos) => {
 /**
  * 自力で作成したsuggesterを削除する
  */
-
 const removeSuggester = () => {
   let ul = document.querySelector("ul.inserted-extension-ul");
-  if (ul != null) {
+  if (ul) {
     ul.parentNode.removeChild(ul);
   }
 };
+
+/**
+ * PRのサジェストに候補を追加する
+ */
+let users;
+let clone;
+const prObserver = new MutationObserver((mutations) => {
+  if (clone) return;
+  clone = document.querySelector("div[data-filterable-for=review-filter-field] > label[role=menuitemcheckbox]").cloneNode(true);
+});
+
+document.body.addEventListener("click", () => {
+  if (!users) {
+    fetch(document.querySelector("div[data-filterable-for=review-filter-field]").getAttribute("data-filterable-src"), {
+        headers: {
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error();
+        }
+      })
+      .then((json) => {
+        users = json;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+  prObserver.observe(document.querySelector("div[data-filterable-for=review-filter-field]"), options);
+  document.querySelector("#review-filter-field").addEventListener("keyup", (e) => {
+
+    alias.forEach(a => {
+      if (e.target.value && a[2].startsWith(e.target.value)) {
+        users.users.filter((item, index) => {
+          if (item.login === a[0]) {
+            clone.querySelector("span.js-username").textContent = a[2];
+            clone.querySelector("span.js-description").textContent = a[1];
+            clone.querySelector("input[type=checkbox]").value = item.id;
+            clone.querySelector("div.select-menu-item-gravatar > img").src = item.avatar;
+            document.querySelector("div[data-filterable-for=review-filter-field]").insertBefore(clone, document.querySelector("div[data-filterable-for=review-filter-field]").firstChild);
+          }
+        });
+      }
+    });
+  }, false)
+});
