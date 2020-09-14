@@ -13,7 +13,9 @@
   ],
   "description": "GitHubで名前にエイリアスを設定するための拡張です",
   "icons": {
-    "128": "icon_128.png"
+    "16": "icons/icon_16.png",
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
   },
   "manifest_version": 2,
   "name": "GitHubで名前にエイリアスを設定するやつ",

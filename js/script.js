@@ -9,10 +9,10 @@ chrome.storage.sync.get(["alias"], (item) => {
   }
 });
 const replaceMentions = () => {
-  let aliasNames = document.querySelectorAll("a.user-mention, a[data-hovercard-type=user], a[data-octo-click=hovercard-link-click]");
+  const aliasNames = document.querySelectorAll("a.user-mention, a[data-hovercard-type=user], a[data-octo-click=hovercard-link-click]");
   aliasNames.forEach(name => {
     alias.forEach(a => {
-      let text = name.textContent;
+      const text = name.textContent;
       if (text.indexOf(a[0]) !== -1 && text.indexOf(a[1]) === -1) {
         name.textContent = text.replace(a[0], `${a[0]} (${a[1]})`);
       }
@@ -29,12 +29,12 @@ let calledCreateSuggester = false;
 
 // オブザーバーの作成
 const observer = new MutationObserver((mutations) => {
-  let uls = document.querySelectorAll("ul.suggester-container");
+  const uls = document.querySelectorAll("ul.suggester-container");
   if (uls.length > 1) {
     removeSuggester();
   }
-  let ul = document.querySelector("ul.suggester-container");
-  let insertedUl = document.querySelector("ul.inserted-extension-ul");
+  const ul = document.querySelector("ul.suggester-container");
+  const insertedUl = document.querySelector("ul.inserted-extension-ul");
   if (insertedUl) {
     calledCreateSuggester = true;
     return;
@@ -47,14 +47,13 @@ const observer = new MutationObserver((mutations) => {
       if (!mutations[0].target) {
         return;
       }
-      let child = mutations[0].target.querySelector("textarea");
-      let pos = child.selectionStart;
-      let text = child.value;
+      const child = mutations[0].target.querySelector("textarea");
+      const pos = child.selectionStart;
+      const text = child.value;
       alias.forEach(a => {
-        let start = fetchStr(text, pos);
-        console.log(start);
+        const start = fetchStr(text, pos);
         if (start && a[2].startsWith(start)) {
-          let liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
+          const liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
           ul.insertBefore(createElementFromHTML(liText), ul.firstChild);
         }
       });
@@ -89,13 +88,13 @@ const createSuggester = () => {
       (e) => {
         removeSuggester();
         if (!ulShowing || calledCreateSuggester) {
-          let pos = e.target.selectionStart;
+          const pos = e.target.selectionStart;
           let text = e.target.value;
-          var end = e.target.selectionEnd;
+          const end = e.target.selectionEnd;
           const ulText = `<ul role="listbox" class="inserted-extension-ul suggester-container suggester suggestions list-style-none position-absolute" style="${ulLastPos}">`;
           let liText = "";
           alias.forEach(a => {
-            let start = fetchStr(text, pos);
+            const start = fetchStr(text, pos);
             if (start && a[2].startsWith(start)) {
               liText += `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
             }
@@ -103,13 +102,13 @@ const createSuggester = () => {
           if (liText) {
             // ul追加
             e.target.parentNode.insertBefore(createElementFromHTML(ulText + liText + "</ul>"), e.target.nextSibling);
-            let lis = document.querySelectorAll("li.inserted-extension");
+            const lis = document.querySelectorAll("li.inserted-extension");
             lis.forEach(li => {
               li.addEventListener("click", () => {
-                let diff = caclPos(text, pos);
-                var before = text.substr(0, pos - diff);
-                var word = li.getAttribute("data-value");
-                var after = text.substr(pos);
+                const diff = caclPos(text, pos);
+                const before = text.substr(0, pos - diff);
+                const word = li.getAttribute("data-value");
+                const after = text.substr(pos);
                 text = before + word + after;
                 e.target.value = text;
                 e.target.selectionEnd = end + word.length;
@@ -145,9 +144,9 @@ const createElementFromHTML = (html) => {
  * アットマークまでの位置を計算する
  */
 const caclPos = (text, caretPos) => {
-  let before = text.substr(0, caretPos);
-  let index = before.lastIndexOf("@");
-  let diff = caretPos - index;
+  const before = text.substr(0, caretPos);
+  const index = before.lastIndexOf("@");
+  const diff = caretPos - index;
   return diff - 1;
 };
 
@@ -155,8 +154,8 @@ const caclPos = (text, caretPos) => {
  * アットマークからの文字列を取得する
  */
 const fetchStr = (text, caretPos) => {
-  let before = text.substr(0, caretPos);
-  let index = before.lastIndexOf("@");
+  const before = text.substr(0, caretPos);
+  const index = before.lastIndexOf("@");
   return text.substr(index + 1, caretPos).split(" ")[0];
 };
 
@@ -164,7 +163,7 @@ const fetchStr = (text, caretPos) => {
  * 自力で作成したsuggesterを削除する
  */
 const removeSuggester = () => {
-  let ul = document.querySelector("ul.inserted-extension-ul");
+  const ul = document.querySelector("ul.inserted-extension-ul");
   if (ul) {
     ul.parentNode.removeChild(ul);
   }
@@ -183,11 +182,11 @@ const prObserver = new MutationObserver((mutations) => {
 document.body.addEventListener("click", () => {
   if (!users) {
     fetch(document.querySelector("div[data-filterable-for=review-filter-field]").getAttribute("data-filterable-src"), {
-        headers: {
-          "Accept": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-      })
+      headers: {
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    })
       .then((response) => {
         if (response.ok) {
           return response.json();
