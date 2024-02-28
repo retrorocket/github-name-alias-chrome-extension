@@ -8,21 +8,28 @@ chrome.storage.sync.get(["alias"], (item) => {
   }
 });
 
-
-document.querySelector("#setter").addEventListener("click", () => {
-  const result = convertCSVtoArray(document.querySelector("textarea").value);
-  chrome.storage.sync.set({
-    "alias": result
-  }, function () {
-    alert('設定が保存されました');
-  });
-}, false);
+document.querySelector("#setter").addEventListener(
+  "click",
+  () => {
+    const result = convertCSVtoArray(document.querySelector("textarea").value);
+    chrome.storage.sync.set(
+      {
+        alias: result,
+      },
+      function () {
+        alert("設定が保存されました");
+      }
+    );
+  },
+  false
+);
 
 /**
  * カンマ区切りテキストを二次元配列に変換する
  * https://uxmilk.jp/11586
  */
-function convertCSVtoArray(str) { // 読み込んだCSVデータが文字列として渡される
+function convertCSVtoArray(str) {
+  // 読み込んだCSVデータが文字列として渡される
   let result = []; // 最終的な二次元配列を入れるための配列
   const tmp = str.split(/\r\n|\n|\r/); // 改行を区切り文字として行を要素とした配列を生成
 
@@ -31,7 +38,7 @@ function convertCSVtoArray(str) { // 読み込んだCSVデータが文字列と�
     if (!tmp[i]) {
       break;
     }
-    result[i] = tmp[i].split(',');
+    result[i] = tmp[i].split(",");
   }
 
   return result;

@@ -9,14 +9,16 @@ chrome.storage.sync.get(["alias"], (item) => {
   }
 });
 const replaceMentions = () => {
-  const aliasNames = document.querySelectorAll("a.user-mention, a[data-hovercard-type=user], a[data-octo-click=hovercard-link-click]");
-  aliasNames.forEach(name => {
-    alias.forEach(a => {
+  const aliasNames = document.querySelectorAll(
+    "a.user-mention, a[data-hovercard-type=user], a[data-octo-click=hovercard-link-click]"
+  );
+  aliasNames.forEach((name) => {
+    alias.forEach((a) => {
       const text = name.textContent;
       if (text.indexOf(a[0]) !== -1 && text.indexOf(a[1]) === -1) {
         name.textContent = text.replace(a[0], `${a[0]} (${a[1]})`);
       }
-    })
+    });
   });
 };
 
@@ -50,7 +52,7 @@ const observer = new MutationObserver((mutations) => {
       const child = mutations[0].target.querySelector("textarea");
       const pos = child.selectionStart;
       const text = child.value;
-      alias.forEach(a => {
+      alias.forEach((a) => {
         const start = fetchStr(text, pos);
         if (start && a[2].startsWith(start)) {
           const liText = `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
@@ -65,7 +67,7 @@ const observer = new MutationObserver((mutations) => {
 
 // 監視オプションの作成
 const options = {
-  childList: true
+  childList: true,
 };
 
 let textareas;
@@ -83,8 +85,9 @@ document.body.addEventListener("click", () => {
  * GitHubのsuggesterがサジェストを終了した場合にサジェストする
  */
 const createSuggester = () => {
-  textareas.forEach(textarea => {
-    textarea.addEventListener("keyup",
+  textareas.forEach((textarea) => {
+    textarea.addEventListener(
+      "keyup",
       (e) => {
         removeSuggester();
         if (!ulShowing || calledCreateSuggester) {
@@ -93,7 +96,7 @@ const createSuggester = () => {
           const end = e.target.selectionEnd;
           const ulText = `<ul role="listbox" class="inserted-extension-ul suggester-container suggester suggestions list-style-none position-absolute" style="${ulLastPos}">`;
           let liText = "";
-          alias.forEach(a => {
+          alias.forEach((a) => {
             const start = fetchStr(text, pos);
             if (start && a[2].startsWith(start)) {
               liText += `<li class="inserted-extension" data-value="${a[0]}" role="option"><span>${a[0]}</span>&nbsp;<small>${a[1]}</small></li>`;
@@ -101,41 +104,48 @@ const createSuggester = () => {
           });
           if (liText) {
             // ul追加
-            e.target.parentNode.insertBefore(createElementFromHTML(ulText + liText + "</ul>"), e.target.nextSibling);
+            e.target.parentNode.insertBefore(
+              createElementFromHTML(ulText + liText + "</ul>"),
+              e.target.nextSibling
+            );
             const lis = document.querySelectorAll("li.inserted-extension");
-            lis.forEach(li => {
-              li.addEventListener("click", () => {
-                const diff = caclPos(text, pos);
-                const before = text.substr(0, pos - diff);
-                const word = li.getAttribute("data-value");
-                const after = text.substr(pos);
-                text = before + word + after;
-                e.target.value = text;
-                e.target.selectionEnd = end + word.length;
-                removeSuggester();
-              }, false);
-            })
+            lis.forEach((li) => {
+              li.addEventListener(
+                "click",
+                () => {
+                  const diff = caclPos(text, pos);
+                  const before = text.substr(0, pos - diff);
+                  const word = li.getAttribute("data-value");
+                  const after = text.substr(pos);
+                  text = before + word + after;
+                  e.target.value = text;
+                  e.target.selectionEnd = end + word.length;
+                  removeSuggester();
+                },
+                false
+              );
+            });
           } else {
             removeSuggester();
           }
         }
-      }, false);
-    textarea.addEventListener("click",
-      () => {
-        removeSuggester();
-      })
+      },
+      false
+    );
+    textarea.addEventListener("click", () => {
+      removeSuggester();
+    });
   });
 };
-
 
 /**
  * HTML文字列をElementへ変換する。
  * @param html HTML文字列
- * @returns {Element} 
+ * @returns {Element}
  * https://qiita.com/seijikohara/items/911f886d8eb79862870b
  */
 const createElementFromHTML = (html) => {
-  const tempEl = document.createElement('div');
+  const tempEl = document.createElement("div");
   tempEl.innerHTML = html;
   return tempEl.firstElementChild;
 };
@@ -176,17 +186,29 @@ let users;
 let clone;
 const prObserver = new MutationObserver((mutations) => {
   if (clone) return;
-  clone = document.querySelector("div[data-filterable-for=review-filter-field] > label[role=menuitemcheckbox]").cloneNode(true);
+  clone = document
+    .querySelector(
+      "div[data-filterable-for=review-filter-field] > label[role=menuitemcheckbox]"
+    )
+    .cloneNode(true);
 });
 
 document.body.addEventListener("click", () => {
+  if (!document.querySelector("div[data-filterable-for=review-filter-field]"))
+    return;
+
   if (!users) {
-    fetch(document.querySelector("div[data-filterable-for=review-filter-field]").getAttribute("data-filterable-src"), {
-      headers: {
-        "Accept": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    })
+    fetch(
+      document
+        .querySelector("div[data-filterable-for=review-filter-field]")
+        .getAttribute("data-filterable-src"),
+      {
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      }
+    )
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -201,21 +223,35 @@ document.body.addEventListener("click", () => {
         console.log(error);
       });
   }
-  prObserver.observe(document.querySelector("div[data-filterable-for=review-filter-field]"), options);
-  document.querySelector("#review-filter-field").addEventListener("keyup", (e) => {
-
-    alias.forEach(a => {
-      if (e.target.value && a[2].startsWith(e.target.value)) {
-        users.users.filter((item, index) => {
-          if (item.login === a[0]) {
-            clone.querySelector("span.js-username").textContent = a[2];
-            clone.querySelector("span.js-description").textContent = a[1];
-            clone.querySelector("input[type=checkbox]").value = item.id;
-            clone.querySelector("div.select-menu-item-gravatar > img").src = item.avatar;
-            document.querySelector("div[data-filterable-for=review-filter-field]").insertBefore(clone, document.querySelector("div[data-filterable-for=review-filter-field]").firstChild);
-          }
-        });
-      }
-    });
-  }, false)
+  prObserver.observe(
+    document.querySelector("div[data-filterable-for=review-filter-field]"),
+    options
+  );
+  document.querySelector("#review-filter-field").addEventListener(
+    "keyup",
+    (e) => {
+      alias.forEach((a) => {
+        if (e.target.value && a[2].startsWith(e.target.value)) {
+          users.users.filter((item, index) => {
+            if (item.login === a[0]) {
+              clone.querySelector("span.js-username").textContent = a[2];
+              clone.querySelector("span.js-description").textContent = a[1];
+              clone.querySelector("input[type=checkbox]").value = item.id;
+              clone.querySelector("div.select-menu-item-gravatar > img").src =
+                item.avatar;
+              document
+                .querySelector("div[data-filterable-for=review-filter-field]")
+                .insertBefore(
+                  clone,
+                  document.querySelector(
+                    "div[data-filterable-for=review-filter-field]"
+                  ).firstChild
+                );
+            }
+          });
+        }
+      });
+    },
+    false
+  );
 });
