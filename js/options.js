@@ -16,7 +16,13 @@ document.querySelector("#setter").addEventListener(
       {
         alias: result,
       },
-      function () {
+      () => {
+        if (chrome.runtime.lastError) {
+          alert(
+            "設定が保存できませんでした。保存可能なリストのサイズは8KBまでです。登録数が多すぎる場合は減らしてください"
+          );
+          return;
+        }
         alert("設定が保存されました");
       }
     );
