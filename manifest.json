@@ -16,6 +16,6 @@
   "manifest_version": 3,
   "name": "GitHubで名前にエイリアスを設定するやつ",
   "options_page": "options.html",
-  "version": "0.2",
+  "version": "0.3",
   "permissions": ["storage"]
 }
